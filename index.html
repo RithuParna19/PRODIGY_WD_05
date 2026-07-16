@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A premium, glassmorphic weather dashboard application providing highly accurate current weather conditions, hourly trends, and a 7-day forecast.">
+    <title>AeroSky - Premium Weather Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dark-theme">
+    <!-- Animated Canvas Background -->
+    <canvas id="weather-canvas"></canvas>
+
+    <!-- Main Dashboard Container -->
+    <main class="dashboard-wrapper">
+        <!-- Header / Navigation -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i data-lucide="cloud-sun" class="logo-icon"></i>
+                <h1>AeroSky</h1>
+            </div>
+            
+            <div class="search-controls">
+                <form id="search-form" class="search-form">
+                    <div class="input-wrapper">
+                        <i data-lucide="search" class="search-input-icon"></i>
+                        <input type="text" id="search-input" placeholder="Search for cities..." autocomplete="off" required>
+                    </div>
+                    <button type="submit" class="btn btn-search" id="btn-search-submit" aria-label="Search city">
+                        <span>Search</span>
+                    </button>
+                </form>
+                
+                <button type="button" class="btn btn-icon btn-location" id="btn-location" title="Use current location" aria-label="Use current location">
+                    <i data-lucide="map-pin"></i>
+                </button>
+                
+                <button type="button" class="btn btn-icon btn-theme" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">
+                    <i data-lucide="moon" class="theme-icon-dark"></i>
+                    <i data-lucide="sun" class="theme-icon-light"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Loading Spinner Container -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>Retrieving meteorological data...</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Body -->
+        <section class="dashboard-grid">
+            
+            <!-- Left Panel: Current Weather -->
+            <section class="left-panel">
+                <div class="glass-card current-weather-card" id="current-weather">
+                    <div class="card-header">
+                        <div class="location-info">
+                            <h2 id="city-name">Loading...</h2>
+                            <p id="current-date-time">-- : --</p>
+                        </div>
+                        <span class="weather-badge" id="weather-condition-badge">---</span>
+                    </div>
+                    
+                    <div class="weather-main">
+                        <div class="weather-icon-wrapper" id="weather-main-icon-container">
+                            <i data-lucide="cloud-lightning" class="main-weather-icon animated"></i>
+                        </div>
+                        <div class="temp-wrapper">
+                            <span class="current-temp" id="temp-value">--</span>
+                            <span class="temp-unit">°C</span>
+                        </div>
+                    </div>
+                    
+                    <div class="weather-details-summary">
+                        <p class="description" id="weather-description">Meteorological data is being retrieved.</p>
+                        <div class="feels-like">
+                            Feels like <strong id="feels-like-value">--</strong>°C
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Panel: Weather Metrics Grid -->
+            <section class="center-panel">
+                <div class="metrics-grid">
+                    <!-- Humidity Card -->
+                    <div class="glass-card metric-card" id="card-humidity">
+                        <div class="metric-header">
+                            <span>Humidity</span>
+                            <i data-lucide="droplet" class="metric-icon blue"></i>
+                        </div>
+                        <div class="metric-body">
+                            <h3 id="humidity-value">--</h3>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="metric-footer">
+                            <p id="humidity-desc">Indoor/outdoor moisture ratio</p>
+                        </div>
+                    </div>
+
+                    <!-- Wind Speed Card -->
+                    <div class="glass-card metric-card" id="card-wind">
+                        <div class="metric-header">
+                            <span>Wind Speed</span>
+                            <i data-lucide="wind" class="metric-icon cyan"></i>
+                        </div>
+                        <div class="metric-body">
+                            <h3 id="wind-value">--</h3>
+                            <span class="metric-unit">m/s</span>
+                        </div>
+                        <div class="metric-footer">
+                            <span id="wind-direction"><i data-lucide="navigation-2" class="wind-arrow"></i> Calm</span>
+                        </div>
+                    </div>
+
+                    <!-- Pressure Card -->
+                    <div class="glass-card metric-card" id="card-pressure">
+                        <div class="metric-header">
+                            <span>Pressure</span>
+                            <i data-lucide="gauge" class="metric-icon purple"></i>
+                        </div>
+                        <div class="metric-body">
+                            <h3 id="pressure-value">--</h3>
+                            <span class="metric-unit">hPa</span>
+                        </div>
+                        <div class="metric-footer">
+                            <p id="pressure-desc">Atmospheric weight index</p>
+                        </div>
+                    </div>
+
+                    <!-- Visibility Card -->
+                    <div class="glass-card metric-card" id="card-visibility">
+                        <div class="metric-header">
+                            <span>Visibility</span>
+                            <i data-lucide="eye" class="metric-icon emerald"></i>
+                        </div>
+                        <div class="metric-body">
+                            <h3 id="visibility-value">--</h3>
+                            <span class="metric-unit">km</span>
+                        </div>
+                        <div class="metric-footer">
+                            <p id="visibility-desc">Atmospheric transparency</p>
+                        </div>
+                    </div>
+
+                    <!-- UV Index Card -->
+                    <div class="glass-card metric-card" id="card-uv">
+                        <div class="metric-header">
+                            <span>UV Index</span>
+                            <i data-lucide="sun" class="metric-icon yellow"></i>
+                        </div>
+                        <div class="metric-body">
+                            <h3 id="uv-value">--</h3>
+                            <span class="metric-badge" id="uv-level">Low</span>
+                        </div>
+                        <div class="metric-footer">
+                            <div class="uv-slider">
+                                <div class="uv-slider-bar">
+                                    <div class="uv-slider-thumb" id="uv-indicator"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cloud Percentage Card -->
+                    <div class="glass-card metric-card" id="card-clouds">
+                        <div class="metric-header">
+                            <span>Cloud Cover</span>
+                            <i data-lucide="cloud" class="metric-icon slate"></i>
+                        </div>
+                        <div class="metric-body">
+                            <h3 id="clouds-value">--</h3>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="metric-footer">
+                            <p id="clouds-desc">Sky coverage fraction</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sun Cycle Card (Sunrise / Sunset) -->
+                <div class="glass-card sun-cycle-card" id="card-sun-cycle">
+                    <div class="card-title">
+                        <i data-lucide="sunrise"></i>
+                        <h3>Solar Cycle</h3>
+                    </div>
+                    <div class="sun-cycle-content">
+                        <div class="sun-time-block left">
+                            <span class="label">Sunrise</span>
+                            <span class="time" id="sunrise-time">--:-- AM</span>
+                        </div>
+                        
+                        <div class="sun-arc-container">
+                            <svg class="sun-arc-svg" viewBox="0 0 200 100" preserveAspectRatio="none">
+                                <!-- Background dashed path -->
+                                <path d="M 10,90 A 90,90 0 0,1 190,90" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="3" stroke-dasharray="4,4" id="sun-path-bg" />
+                                <!-- Active colored path -->
+                                <path d="M 10,90 A 90,90 0 0,1 190,90" fill="none" stroke="url(#sun-arc-gradient)" stroke-width="4" stroke-dasharray="300" stroke-dashoffset="300" id="sun-path-active" />
+                                <defs>
+                                    <linearGradient id="sun-arc-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#ffb703" />
+                                        <stop offset="50%" stop-color="#fb8500" />
+                                        <stop offset="100%" stop-color="#f72585" />
+                                    </linearGradient>
+                                </defs>
+                                <!-- Sun Node -->
+                                <circle cx="10" cy="90" r="7" fill="#fb8500" filter="drop-shadow(0px 0px 8px #fb8500)" id="sun-node" />
+                            </svg>
+                        </div>
+
+                        <div class="sun-time-block right">
+                            <span class="label">Sunset</span>
+                            <span class="time" id="sunset-time">--:-- PM</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom Panel: Forecast Data -->
+            <section class="bottom-panel-left">
+                <!-- Hourly Forecast -->
+                <div class="glass-card hourly-forecast-card">
+                    <div class="card-title">
+                        <i data-lucide="clock"></i>
+                        <h3>Hourly Forecast (24h)</h3>
+                    </div>
+                    <div class="hourly-forecast-scroll" id="hourly-forecast-container">
+                        <!-- Filled Dynamically with JS -->
+                        <div class="forecast-skeleton-container">
+                            <div class="skeleton hourly-skeleton"></div>
+                            <div class="skeleton hourly-skeleton"></div>
+                            <div class="skeleton hourly-skeleton"></div>
+                            <div class="skeleton hourly-skeleton"></div>
+                            <div class="skeleton hourly-skeleton"></div>
+                            <div class="skeleton hourly-skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bottom-panel-right">
+                <!-- 7-Day Forecast -->
+                <div class="glass-card daily-forecast-card">
+                    <div class="card-title">
+                        <i data-lucide="calendar"></i>
+                        <h3>7-Day Forecast</h3>
+                    </div>
+                    <div class="daily-forecast-list" id="daily-forecast-container">
+                        <!-- Filled Dynamically with JS -->
+                        <div class="forecast-skeleton-container vertical">
+                            <div class="skeleton daily-skeleton"></div>
+                            <div class="skeleton daily-skeleton"></div>
+                            <div class="skeleton daily-skeleton"></div>
+                            <div class="skeleton daily-skeleton"></div>
+                            <div class="skeleton daily-skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </section>
+    </main>
+
+    <!-- Error Toast Notification -->
+    <div id="error-toast" class="error-toast hidden">
+        <div class="toast-content">
+            <i data-lucide="alert-circle" class="error-icon"></i>
+            <div class="toast-message">
+                <h4 id="error-title">Error</h4>
+                <p id="error-desc">Unable to retrieve weather data.</p>
+            </div>
+            <button class="btn-close-toast" id="btn-close-toast" aria-label="Close error message">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Script Links -->
+    <script src="script.js"></script>
+</body>
+</html>
